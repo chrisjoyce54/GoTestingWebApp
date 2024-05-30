@@ -8,9 +8,9 @@ import (
 
 var pathToTemplates = "./templates/"
 
-func (app *application) Home(writer http.ResponseWriter, reader *http.Request) {
+func (app *application) Home(writer http.ResponseWriter, request *http.Request) {
 	//fmt.Fprint(writer, "This is the home page.")
-	_ = app.render(writer, reader, "home.page.gohtml", &TemplateData{})
+	_ = app.render(writer, request, "home.page.gohtml", &TemplateData{})
 }
 
 type TemplateData struct {
@@ -18,12 +18,14 @@ type TemplateData struct {
 	Data map[string]any
 }
 
-func (app *application) render(writer http.ResponseWriter, reader *http.Request, templt string, data *TemplateData) error {
+func (app *application) render(writer http.ResponseWriter, request *http.Request, templt string, data *TemplateData) error {
 	parsedTemplate, err := template.ParseFiles(path.Join(pathToTemplates, templt))
 	if err != nil {
 		http.Error(writer, "bad request", http.StatusBadRequest)
 		return err
 	}
+
+	data.IP = app.ipFromContext(request.Context())
 
 	err = parsedTemplate.Execute(writer, data)
 
